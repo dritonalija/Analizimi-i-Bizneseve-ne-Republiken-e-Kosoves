@@ -121,34 +121,32 @@ def fill_business_type(df):
 
 # Funksioni për të koduar fushën 'Aktivitetet' me kodim të etiketave
 def encode_aktivitetet(df):
-    """Encode the 'Aktivitetet' field by splitting by ',\n', applying label encoding, and saving the mapping."""
+    """Kodon fushën 'Aktivitetet' duke e ndarë me ',\n', aplikuar kodimin e etiketave dhe ruan mapimin."""
     
-    # Split 'Aktivitetet' by ',\n' and handle NaN values by converting them to empty lists
+    # Ndaj 'Aktivitetet' me ',\n' dhe trajto vlerat NaN duke i kthyer në lista bosh
     df['Aktivitetet'] = df['Aktivitetet'].fillna("").str.split(r',\n')
     
-    # Flatten all activities to get a list of unique activities
+    # Shpërndaj të gjitha aktivitetet për të krijuar një listë unike të aktiviteteve
     all_activities = [activity.strip() for sublist in df['Aktivitetet'] for activity in sublist if activity.strip()]
     unique_activities = pd.Series(all_activities).unique()
     
-    # Label encode unique activities
+    # Kodi etiketohet për aktivitetet unike
     label_encoder = LabelEncoder()
     label_encoder.fit(unique_activities)
     
-    # Convert encoded labels to standard Python int and save the mapping to a JSON file
+    # Konverto etiketat e koduara në numra standardë dhe ruaj mapimin në një skedar JSON
     activity_map = {activity: int(label) for activity, label in zip(unique_activities, label_encoder.transform(unique_activities))}
     output_path = "../data/processed/activity_map.json"
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w") as file:
         json.dump(activity_map, file)
     
-    #  Encode each row's 'Aktivitetet' field as a comma-separated string of encoded labels
+    # Kodi çdo rresht të fushës 'Aktivitetet' si një listë e etiketave të koduara
     def encode_activities(activity_list):
-        # Ensure activity_list is a list before encoding
-        encoded_values = [activity_map.get(activity.strip(), None) for activity in activity_list if activity.strip()]
-        # Convert list of encoded values to a comma-separated string
-        return ",".join(map(str, encoded_values))
+        # Sigurohuni që activity_list është një listë para kodimit
+        return [activity_map.get(activity.strip(), None) for activity in activity_list if activity.strip()]
     
-    # Apply encoding to each row and create 'Aktivitetet Encoded' column as a comma-separated string
+    # Apliko kodimin për çdo rresht dhe krijo kolonën 'Aktivitetet Encoded'
     df['Aktivitetet Encoded'] = df['Aktivitetet'].apply(encode_activities)
     
     return df
@@ -227,6 +225,23 @@ def preprocess_data(file_path, output_path):
     df = bin_kapitali(df)
     df = bin_employee(df)
     df = encode_aktivitetet(df)
+    
+    # Heq kolonat e panevojshme. Redukton dimensionin e të dhënave
+    df = df[
+        [
+            "Emri i biznesit",
+            "Statusi",
+            "Tipi i biznesit",
+            "Data e regjistrimit",
+            "Komuna",
+            "Kapitali",
+            "Numri i punëtorëve",
+            "Pronarë Mashkull",
+            "Pronarë Femër",
+            "Aktivitetet Encoded",
+        ]
+    ]
+
     save_data(df, output_path)
 
 # Ekzekutimi kryesor i skriptit

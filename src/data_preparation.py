@@ -10,10 +10,12 @@ from sklearn.preprocessing import LabelEncoder
 # Inicializojmë detektuesin e gjinisë
 d = gender.Detector()
 
+
 # Funksioni për të ngarkuar të dhëna nga një skedar CSV në një DataFrame Pandas
 def load_data(file_path):
     """Ngarkon të dhënat nga një skedar CSV në një DataFrame Pandas."""
     return pd.read_csv(file_path)
+
 
 # Funksioni për të konvertuar kolonat në formatin e duhur të të dhënave
 def datatype_format(df):
@@ -25,6 +27,7 @@ def datatype_format(df):
     df["Numri i punëtorëve"] = pd.to_numeric(df["Numri i punëtorëve"], errors="coerce")
     return df
 
+
 # Funksioni për të normalizuar vlerat e veçanta në kolonën 'Statusi'
 def normalize_status(df):
     """Normalizon vlerat specifike në kolonën 'Statusi'."""
@@ -35,6 +38,7 @@ def normalize_status(df):
         {"anuluar nga sistemi": "Shuar", "Anuluar nga sistemi": "Shuar"}
     )
     return df
+
 
 # Funksioni për të përcaktuar gjininë bazuar në emrat duke përdorur gender_guesser
 def detect_gender_gender_guesser(name):
@@ -48,9 +52,11 @@ def detect_gender_gender_guesser(name):
     else:
         return "Panjohur"
 
+
 # Funksioni për të përditësuar kolonën 'Gjinia e pronarit' duke deduktuar gjininë nga emrat
 def update_gender_column(df):
     """Përditëson kolonën 'Gjinia e pronarit' për të ruajtur gjininë e deduktuar nga emrat."""
+
     def update_gender(row):
         if all(
             g.strip() == "Panjohur" for g in str(row["Gjinia e pronarit"]).split(",")
@@ -66,6 +72,7 @@ def update_gender_column(df):
     df["Gjinia e pronarit"] = df.apply(update_gender, axis=1)
     return df
 
+
 # Funksioni për të numëruar përsëritjet e gjinive në kolonën 'Gjinia e pronarit'
 def count_genders(df):
     """Krijon kolonat 'Pronarë Mashkull' dhe 'Pronarë Femër' për të numëruar përsëritjet në 'Gjinia e pronarit'."""
@@ -76,6 +83,7 @@ def count_genders(df):
         lambda x: [g.strip() for g in str(x).split(",")].count("Femër")
     )
     return df
+
 
 # Funksioni për të nxjerrë 'Uid' nga fundi i një lidhje për regjistrin
 def extract_registry_number(df):
@@ -90,9 +98,11 @@ def extract_registry_number(df):
     df["Uid"] = df["Uid"].astype("Int64")
     return df
 
+
 # Funksioni për të mbushur vlerat e panjohura në kolonën 'Tipi i biznesit'
 def fill_business_type(df):
     """Mbush vlerat që mungojnë në 'Tipi i biznesit' bazuar në prapashtesën e 'Emri i biznesit'."""
+
     def get_business_type(row):
         if pd.isna(row["Tipi i biznesit"]):
             if row["Emri i biznesit"].endswith("B.I."):
@@ -116,53 +126,73 @@ def fill_business_type(df):
     df["Tipi i biznesit"] = df.apply(get_business_type, axis=1)
     return df
 
-# Funksioni për të koduar fushën 'Aktivitetet' me kodim të etiketave
+
 def encode_aktivitetet(df):
-    """Kodon fushën 'Aktivitetet' duke e ndarë me ',\n', aplikuar kodimin e etiketave dhe ruan mapimin."""
-    
-    # Ndaj 'Aktivitetet' me ',\n' dhe trajto vlerat NaN duke i kthyer në lista bosh
-    df['Aktivitetet'] = df['Aktivitetet'].fillna("").str.split(r',\n')
-    
-    # Shpërndaj të gjitha aktivitetet për të krijuar një listë unike të aktiviteteve
-    all_activities = [activity.strip() for sublist in df['Aktivitetet'] for activity in sublist if activity.strip()]
+    """Encode the 'Aktivitetet' field by splitting by newline and applying label encoding."""
+
+    # Split 'Aktivitetet' by newline and handle NaN values by converting them to empty lists
+    df["Aktivitetet"] = df["Aktivitetet"].fillna("").str.split(r"\n")
+
+    # Flatten all activities to get a list of unique activities, stripping extra spaces and any trailing commas
+    all_activities = [
+        activity.strip().rstrip(",")
+        for sublist in df["Aktivitetet"]
+        for activity in sublist
+        if activity.strip()
+    ]
     unique_activities = pd.Series(all_activities).unique()
-    
-    # Kodi etiketohet për aktivitetet unike
+
+    # Label encode unique activities
     label_encoder = LabelEncoder()
     label_encoder.fit(unique_activities)
-    
-    # Konverto etiketat e koduara në numra standardë dhe ruaj mapimin në një skedar JSON
-    activity_map = {activity: int(label) for activity, label in zip(unique_activities, label_encoder.transform(unique_activities))}
-    output_path = "../data/processed/activity_map.json"
+
+    # Save mapping as newline-separated JSON
+    activity_map = {
+        activity: int(label)
+        for activity, label in zip(
+            unique_activities, label_encoder.transform(unique_activities)
+        )
+    }
+    output_path = "../data/processed/activity_map.jsonl"
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w") as file:
-        json.dump(activity_map, file)
-    
-    # Kodi çdo rresht të fushës 'Aktivitetet' si një listë e etiketave të koduara
+        for activity, label in activity_map.items():
+            json.dump({activity: label}, file)
+            file.write("\n")
+
+    # Encode each row's 'Aktivitetet' field and store as a list of integers
     def encode_activities(activity_list):
-        # Sigurohuni që activity_list është një listë para kodimit
-        return [activity_map.get(activity.strip(), None) for activity in activity_list if activity.strip()]
-    
-    # Apliko kodimin për çdo rresht dhe krijo kolonën 'Aktivitetet Encoded'
-    df['Aktivitetet Encoded'] = df['Aktivitetet'].apply(encode_activities)
-    
+        # Ensure activity_list is a list before encoding
+        return [
+            activity_map[activity.strip().rstrip(",")]
+            for activity in activity_list
+            if activity.strip()
+        ]
+
+    # Apply encoding to each row
+    df["Aktivitetet Encoded"] = df["Aktivitetet"].apply(encode_activities)
+
     return df
+
 
 # Funksioni për të hequr rreshtat e dyfishtë bazuar në kolonën 'Uid'
 def remove_duplicates(df):
     """Heq rreshtat e dyfishtë bazuar në kolonën 'Uid'."""
     return df.drop_duplicates(subset="Uid", keep="first")
 
+
 def handle_missing_values(df):
     """Trajton vlerat që mungojnë me strategji të specifikuara."""
     df.fillna({"Numri i punëtorëve": 0, "Kapitali": 0}, inplace=True)
     return df
+
 
 # Funksioni për të ruajtur të dhënat e përpunuara në një skedar CSV
 def save_data(df, output_path):
     """Ruaj të dhënat e përpunuara në një skedar CSV."""
     df.to_csv(output_path, index=False)
     print(f"Të dhënat e përpunuara janë ruajtur në '{output_path}'")
+
 
 # Funksioni kryesor për përpunimin e të dhënave
 def preprocess_data(file_path, output_path):
@@ -177,7 +207,7 @@ def preprocess_data(file_path, output_path):
     df = fill_business_type(df)
     df = handle_missing_values(df)
     df = encode_aktivitetet(df)
-    
+
     # Heq kolonat e panevojshme. Redukton dimensionin e të dhënave
     df = df[
         [
@@ -196,10 +226,11 @@ def preprocess_data(file_path, output_path):
 
     save_data(df, output_path)
 
+
 # Ekzekutimi kryesor i skriptit
 if __name__ == "__main__":
     # Përkufizon shtegun e skedarëve
-    input_file_path = "../data/raw/data.csv" 
+    input_file_path = "../data/raw/data.csv"
     output_file_path = "../data/processed/prepared_data.csv"
 
     # Sigurohet që direktoria 'processed' ekziston

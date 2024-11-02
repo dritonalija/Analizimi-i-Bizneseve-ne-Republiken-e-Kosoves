@@ -1,42 +1,31 @@
-import requests
-import gender_guesser.detector as gender
-from nameparser import HumanName
-# Funksioni për të parashikuar gjininë për një listë emrash duke përdorur Genderize.io
-def predict_genders_with_genderize(names):
-    # Përgatit URL-në duke shtuar parametrat `name[]` për secilin emër
-    url = "https://api.genderize.io/"
-    params = [("name[]", name) for name in names]
-    
-    # Bën kërkesën HTTP GET
-    response = requests.get(url, params=params)
-    
-    # Kontrollon nëse kërkesa është kryer me sukses
-    if response.status_code == 200:
-        data = response.json()
-        # Kthen një fjalor ku emrat janë çelësat dhe gjinia është vlera
-        return {entry['name']: entry.get('gender', 'unknown') for entry in data}
-    else:
-        # Në rast gabimi, printo statusin dhe mesazhin e gabimit
-        print("Gabim:", response.status_code, response.text)
-        return None
-    
-# Inicializojmë detektuesin e gjinisë
-d = gender.Detector()
+import pandas as pd
+import glob
+from IPython.display import display
 
-def predict_genders_with_gender_guesser(name):
-    first_name = HumanName(name).first  # merr vetëm emrin e parë
-    guess = d.get_gender(first_name)
-    if guess in ['male', 'mostly_male']:
-        return 'Mashkull'
-    elif guess in ['female', 'mostly_female']:
-        return 'Femër'
-    else:
-        return 'Panjohur'
+# Shtegu drejt dosjes që përmban skedarët CSV
+file_path = '../data/raw'
 
-# Lista e emrave për të cilët duam të parashikojmë gjininë
-names = ["Emri"]
+# Përdorim glob për të marrë vetëm skedarët CSV që përmbajnë 'data-2' në emrat e tyre
+selected_files = glob.glob(file_path + "/*data-2*.csv")
 
-# Thirr funksionin dhe printo rezultatet
-genders = predict_genders_with_genderize(names)
+# Krijojmë një listë të DataFrames për të ruajtur të dhënat nga secili skedar
+dataframes = []
 
-print(genders)
+# Kalojmë nëpër secilin skedar, e lexojmë dhe shfaqim informacionin e tij
+for file in selected_files:
+    df = pd.read_csv(file)  # Lexojmë skedarin CSV në një DataFrame
+    dataframes.append(df)  # Shtojmë DataFrame-in në listë
+    print(f"Informacion për skedarin {file}:")
+    display(df.info())  # Shfaqim informacionin e DataFrame-it
+    print("\n" + "-"*50 + "\n")  # Shtojmë një vijë ndarëse për pamjen
+
+# Bashkojmë të gjitha DataFrames në një të vetme
+merged_df = pd.concat(dataframes, ignore_index=True)
+
+# Shfaqim informacionin për DataFrame-in e bashkuar
+print("Informacion për DataFrame-in e bashkuar:")
+display(merged_df.info())
+
+# Ruajmë DataFrame-in e bashkuar në një skedar CSV
+merged_df.to_csv('../data/raw/data.csv', index=False)
+print("Skedari i bashkuar u ruajt si 'data.csv'")

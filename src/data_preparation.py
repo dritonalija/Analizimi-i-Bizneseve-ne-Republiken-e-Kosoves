@@ -23,9 +23,6 @@ def datatype_format(df):
     )
     df["Kapitali"] = pd.to_numeric(df["Kapitali"], errors="coerce")
     df["Numri i punëtorëve"] = pd.to_numeric(df["Numri i punëtorëve"], errors="coerce")
-    df["Emri i biznesit"] = df["Emri i biznesit"].astype(str)
-    df["Tipi i biznesit"] = df["Tipi i biznesit"].astype(str)
-    df["Komuna"] = df["Komuna"].astype(str)
     return df
 
 # Funksioni për të normalizuar vlerat e veçanta në kolonën 'Statusi'
@@ -156,49 +153,6 @@ def remove_duplicates(df):
     """Heq rreshtat e dyfishtë bazuar në kolonën 'Uid'."""
     return df.drop_duplicates(subset="Uid", keep="first")
 
-# Funksioni për të llogaritur moshën e secilit biznes
-def calculate_business_age(df, current_year=2024):
-    """Llogarit moshën e secilit biznes bazuar në 'Data e regjistrimit'."""
-    df["Business_Age"] = current_year - df["Data e regjistrimit"].dt.year
-    return df
-
-# Funksioni për të kategorizuar 'Kapitali' në grupe
-def bin_kapitali(df):
-    """Kategorizon 'Kapitali' në grupe të caktuara sipas intervaleve të përcaktuara."""
-    df["Kapitali_Bin"] = pd.cut(
-        df["Kapitali"],
-        bins=[0, 500, 1000, 5000, 10000, 20000, 30000, np.inf],
-        labels=[
-            "0-500",
-            "500-1000",
-            "1000-5000",
-            "5000-10000",
-            "10000-20000",
-            "20000-30000",
-            "30000+",
-        ],
-    )
-    return df
-
-# Funksioni për të kategorizuar 'Numri i punëtorëve' në grupe të veçanta
-def bin_employee(df):
-    """Kategorizon 'Numri i punëtorëve' në kategori bazuar në intervalet e përcaktuara."""
-    df["Numri i punëtorëve Bin"] = pd.cut(
-        df["Numri i punëtorëve"],
-        bins=[0, 5, 20, 50, 100, 500, 1000, 2500, np.inf],
-        labels=[
-            "0-5",
-            "6-20",
-            "21-50",
-            "51-100",
-            "101-500",
-            "501-1000",
-            "1001-2500",
-            "2510+",
-        ],
-    )
-    return df
-
 def handle_missing_values(df):
     """Trajton vlerat që mungojnë me strategji të specifikuara."""
     df.fillna({"Numri i punëtorëve": 0, "Kapitali": 0}, inplace=True)
@@ -222,8 +176,6 @@ def preprocess_data(file_path, output_path):
     df = count_genders(df)
     df = fill_business_type(df)
     df = handle_missing_values(df)
-    df = bin_kapitali(df)
-    df = bin_employee(df)
     df = encode_aktivitetet(df)
     
     # Heq kolonat e panevojshme. Redukton dimensionin e të dhënave

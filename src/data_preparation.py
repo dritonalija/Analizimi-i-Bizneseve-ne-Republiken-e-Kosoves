@@ -28,17 +28,25 @@ def datatype_format(df):
     return df
 
 
-# Funksioni për të normalizuar vlerat e veçanta në kolonën 'Statusi'
+# Funksioni për të normalizuar 'Statusi' dhe për të nxjerrë datën në 'Data e mbylljes'
 def normalize_status(df):
-    """Normalizon vlerat specifike në kolonën 'Statusi'."""
-    df["Statusi"] = df["Statusi"].apply(
-        lambda x: "Pasiv" if re.search(r"(?i)pasiv", str(x)) else x
+    """Normalizon vlerat specifike në kolonën 'Statusi' dhe nxjerr datat për kolonën 'Data e mbylljes'."""
+    
+    # Nxjerr datën nga vlerat si 'pasiv-DD/MM/YYYY' dhe e ruan në kolonën 'Data e mbylljes'
+    df['Data e mbylljes'] = df['Statusi'].apply(
+        lambda x: re.search(r"(?i)pasiv-(\d{2}/\d{2}/\d{4})", str(x)).group(1) if re.search(r"(?i)pasiv-\d{2}/\d{2}/\d{4}", str(x)) else None
     )
+    
+    # Konverton në formatin 'YYYY-MM-DD'
+    df['Data e mbylljes'] = pd.to_datetime(df['Data e mbylljes'], format='%d/%m/%Y', errors='coerce').dt.strftime('%Y-%m-%d')
+    
+    # Normalizon vlerat në kolonën 'Statusi'
     df["Statusi"] = df["Statusi"].replace(
-        {"anuluar nga sistemi": "Shuar", "Anuluar nga sistemi": "Shuar"}
+        {r"(?i)pasiv.*": "Pasiv", r"(?i)anuluar nga sistemi": "Shuar"},
+        regex=True
     )
+    
     return df
-
 
 # Funksioni për të përcaktuar gjininë bazuar në emrat duke përdorur gender_guesser
 def detect_gender_gender_guesser(name):
@@ -174,6 +182,30 @@ def encode_aktivitetet(df):
 
     return df
 
+# Funksioni për të koduar kolona dhe për të ruajtur hartimet unike në një skedar JSONL
+def encode_columns(df, columns, output_dir="../data/processed"):
+    """Kodon kolonat e specifikuara me LabelEncoder dhe ruan hartimet unike në një skedar JSONL."""
+    os.makedirs(output_dir, exist_ok=True)  # Siguro që ekziston direktoria e daljes
+
+    for column in columns:
+        # Kodo kolonën me LabelEncoder
+        label_encoder = LabelEncoder()
+        df[column] = label_encoder.fit_transform(df[column])
+
+        # Përkufizo shtegun e skedarit JSONL për këtë kolonë
+        jsonl_file_path = os.path.join(output_dir, f"{column}_mapping.jsonl")
+
+        # Merr hartimet unike për kolonën aktuale
+        unique_mappings = {int(label): class_name for label, class_name in zip(label_encoder.transform(label_encoder.classes_), label_encoder.classes_)}
+
+        # Shkruaj të gjitha hartimet unike në skedarin JSONL
+        with open(jsonl_file_path, "w") as file:
+            for label, class_name in unique_mappings.items():
+                json_line = json.dumps({label: class_name})
+                file.write(json_line + "\n")
+        print(f"Hartimet për '{column}' janë ruajtur në {jsonl_file_path}")
+
+    return df
 
 # Funksioni për të hequr rreshtat e dyfishtë bazuar në kolonën 'Uid'
 def remove_duplicates(df):
@@ -207,6 +239,7 @@ def preprocess_data(file_path, output_path):
     df = fill_business_type(df)
     df = handle_missing_values(df)
     df = encode_aktivitetet(df)
+    df = encode_columns(df, ["Statusi", "Tipi i biznesit", "Komuna"])
 
     # Heq kolonat e panevojshme. Redukton dimensionin e të dhënave
     df = df[
@@ -215,6 +248,7 @@ def preprocess_data(file_path, output_path):
             "Statusi",
             "Tipi i biznesit",
             "Data e regjistrimit",
+            "Data e mbylljes",
             "Komuna",
             "Kapitali",
             "Numri i punëtorëve",

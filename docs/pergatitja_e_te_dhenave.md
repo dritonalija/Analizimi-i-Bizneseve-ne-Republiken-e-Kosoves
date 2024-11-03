@@ -75,6 +75,19 @@ Në `data_transformation.py`, kemi gjithashtu shembuj të binarizimit të kolona
 Në skedarin `data_samples.py` janë bërë disa forma të thjeshta të zgjedhjes së mostrës.
 
 
+## Statistika
+
+Në skedarin `data_stats.py` janë bërë disa statistika me datat e procesuara.
+
+## Datatype info
+
+Në skedarin `dataset_info.py` janë gjinden përshkruhen të gjitha vetitë e dataset.
+
+## Korrelacioni
+
+Në skedarin `correlation_matrix.py` jipet matrixa e korrelacionit.
+
+
 
 
 

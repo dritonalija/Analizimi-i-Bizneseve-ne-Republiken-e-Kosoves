@@ -1,6 +1,7 @@
 import csv
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 import os
+import json
 
 # Ekstrakto dhe pastro "Emri i biznesit" nga rreshtat ku "Komuna" është "I panjohur"
 def extract_cleaned_business_names(csv_file_path, field_to_search, value_to_search):
@@ -88,11 +89,30 @@ def fill_form_and_capture_response(search_terms):
         # Mbyll shfletuesin
         browser.close()
 
+# Funksioni për të gjetur numrin e lidhur me "I panjohur" nga një skedar JSONL
+def find_unknown_code(jsonl_file_path):
+    """Gjen numrin e lidhur me 'I panjohur' në një skedar JSONL."""
+    with open(jsonl_file_path, 'r', encoding='utf-8') as file:
+        for line in file:
+            entry = json.loads(line.strip())  # Lexon dhe dekodon çdo linjë JSON
+            for key, value in entry.items():
+                if value == "I panjohur":  # Kontrollon nëse vlera është "I panjohur"
+                    return key  # Kthen çelësin (numrin) që përfaqëson "I panjohur"
+    return None  # Nëse nuk gjendet
+
+# Shembull i përdorimit
+jsonl_file_path = "../data/processed/Komuna_mapping.jsonl"  # Zëvendësoni me shtigjin e skedarit tuaj JSONL
+unknown_code = find_unknown_code(jsonl_file_path)
+
+if unknown_code:
+    print(f"Numri që përfaqëson 'I panjohur' është: {unknown_code}")
+else:
+    print("'I panjohur' nuk u gjet në skedarin JSONL")
 # Rruga drejt file-it CSV që përmban "Komuna" dhe "Emri i biznesit"
 input_csv_file = '../data/processed/prepared_data.csv'  # Zëvendëso me rrugën e file-it tuaj CSV
 
 # Ekstrakto emrat e bizneseve nga CSV ku "Komuna" është "I panjohur"
-search_terms = extract_cleaned_business_names(input_csv_file, field_to_search='Komuna', value_to_search='I panjohur')
+search_terms = extract_cleaned_business_names(input_csv_file, field_to_search='Komuna', value_to_search='8') 
 
 # Ekzekuto funksionin me termat e kërkimit të ekstraktuar
 fill_form_and_capture_response(search_terms)

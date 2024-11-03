@@ -5,10 +5,9 @@ import os
 
 # Funksioni për të ngarkuar të dhënat nga një skedar CSV në një DataFrame të Pandas
 def load_data(file_path):
-    """Ngarkon të dhënat nga një skedar CSV në një DataFrame të Pandas."""
-    if not os.path.exists(file_path):  # Kontrollojmë nëse skedari ekziston
-        raise FileNotFoundError(f"Skedari nuk u gjet: {file_path}")
-    return pd.read_csv(file_path)  # Lexojmë të dhënat nga skedari CSV
+    # Kontrollojmë nëse skedari ekziston
+    if not os.path.exists(file_path): raise FileNotFoundError(f"Skedari nuk u gjet: {file_path}")
+    return pd.read_csv(file_path) # Lexojmë të dhënat nga skedari CSV
 
 # Funksioni për të krijuar matricën e korrelacionit për kolona të zgjedhura
 def create_correlation_matrix(df, selected_columns=None):

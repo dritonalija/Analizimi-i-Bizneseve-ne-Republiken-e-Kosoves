@@ -61,5 +61,4 @@ unique_columns = ['Statusi', 'Tipi i biznesit', 'Komuna']  # Zëvendësoni me ko
 rows_with_nulls = analyze_csv(file_path, unique_columns)
 
 file_path = '../data/raw/data.csv'  # Zëvendësoni me rrugën tuaj të skedarit
-unique_columns = ['Statusi', 'Tipi i biznesit', 'Komuna']  # Zëvendësoni me kolonat tuaja të interesit
 rows_with_nulls = analyze_csv(file_path, unique_columns)

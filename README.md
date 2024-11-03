@@ -24,6 +24,16 @@ Të dhënat e marra nga faqja `Open Businesses Kosova`
 
 Projekti ka për qëllim mbledhjen, përgatitjen dhe pastrimin e të dhënave të bizneseve të Kosovës për të krijuar një dataset të pastër dhe të përgatitur për analiza të mëtejshme. Për këtë qëllim, janë përdorur teknika të ndryshme të para-procesimit për të përmirësuar cilësinë e të dhënave dhe për të krijuar fusha të reja të dobishme për analizë.
 
+Ky projekt ka për synim të gjenerojë statistika të ndryshme për bizneset e Kosovës, duke përfshirë:
+
+- **Analizën e bizneseve sipas aktiviteteve**  
+- **Analizën sipas statusit dhe gjinisë**  
+- **Analizën sipas komunave**  
+- **Analizën e regjistrimeve ndër vite**  
+- **Rritjen e bizneseve në kohë**  
+- **Analizën sipas kapitalit dhe numrit të punëtorëve**  
+
+Këto statistika do të ndihmojnë në kuptimin më të mirë të strukturës dhe trendeve të bizneseve në Kosovë.
 
 
 ## Struktura e Projektit

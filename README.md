@@ -32,7 +32,7 @@ Studimi master 2024/2025. Lënda "Paraqitja dhe vizualizimi i të dhënave". Pro
 
 ## Grupi punues
   - Driton Alija
-  - Muhamet Zahiri
+  - Muhamed Zahiri
   - Jusuf Maksuti
   
 

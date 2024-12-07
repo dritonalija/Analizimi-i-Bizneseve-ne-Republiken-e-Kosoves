@@ -7,22 +7,6 @@ from scipy.stats import chi2_contingency, pearsonr
 def load_data(file_path):
     return pd.read_csv(file_path)
 
-# Funksioni për të përpunuar kolonën "Aktivitetet Encoded"
-def preprocess_activity_column(df, activity_column):
-    """Përpunon kolonën 'Aktivitetet Encoded' duke kthyer listat dhe shtuar statistika."""
-    def parse_activity(activity_str):
-        try:
-            return eval(activity_str) if isinstance(activity_str, str) else []
-        except:
-            return []
-    
-    # Konvertojnë dhe llogarisin statistika bazë për aktivitete
-    df[activity_column] = df[activity_column].apply(parse_activity)
-    df['Numri i Aktiviteteve'] = df[activity_column].apply(len)  # Numri i aktiviteteve
-    df['Aktiviteti_Primar'] = df[activity_column].apply(lambda x: x[0] if len(x) > 0 else None)  # Aktiviteti i parë
-    df['Aktiviteti_Sekondar'] = df[activity_column].apply(lambda x: x[1] if len(x) > 1 else None)  # Aktiviteti i dytë
-    return df
-
 # Funksioni për të analizuar Chi-Square për të gjitha çiftet e kolonave nominale
 def analyze_chi_square_all(df, categorical_columns):
     """Teston pavarësinë mes të gjitha kombinimeve të kolonave nominale."""
@@ -70,12 +54,9 @@ if __name__ == "__main__":
     input_file_path = "../data/processed/prepared_data.csv"
     df = load_data(input_file_path)
     
-    # Përpunojmë kolonën "Aktivitetet Encoded"
-    df = preprocess_activity_column(df, 'Aktivitetet Encoded')
-    
     # Specifikimi i kolonave nominale dhe numerike
-    categorical_columns = ['Tipi i biznesit', 'Komuna', 'Aktiviteti_Primar', 'Aktiviteti_Sekondar']
-    numerical_columns = ['Kapitali', 'Numri i punëtorëve', 'Pronarë Mashkull', 'Pronarë Femër', 'Numri i Aktiviteteve']
+    categorical_columns = ['Tipi i biznesit', 'Komuna', 'Aktiviteti Primar', 'Aktiviteti Sekondar']
+    numerical_columns = ['Numri i punëtorëve', 'Pronarë Mashkull', 'Pronarë Femër']
     
     # Analiza Chi-Square për kolonat nominale (përfshirë aktivitetet)
     chi_square_results = analyze_chi_square_all(df, categorical_columns)

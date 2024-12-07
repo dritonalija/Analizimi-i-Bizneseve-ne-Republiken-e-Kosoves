@@ -101,7 +101,7 @@ def find_unknown_code(jsonl_file_path):
     return None  # Nëse nuk gjendet
 
 # Shembull i përdorimit
-jsonl_file_path = "../data/processed/Komuna_mapping.jsonl"  # Zëvendësoni me shtigjin e skedarit tuaj JSONL
+jsonl_file_path = "../data/processed/Komuna_mapping.jsonl"
 unknown_code = find_unknown_code(jsonl_file_path)
 
 if unknown_code:
@@ -109,10 +109,10 @@ if unknown_code:
 else:
     print("'I panjohur' nuk u gjet në skedarin JSONL")
 # Rruga drejt file-it CSV që përmban "Komuna" dhe "Emri i biznesit"
-input_csv_file = '../data/processed/prepared_data.csv'  # Zëvendëso me rrugën e file-it tuaj CSV
+input_csv_file = '../data/processed/prepared_data.csv' 
 
 # Ekstrakto emrat e bizneseve nga CSV ku "Komuna" është "I panjohur"
-search_terms = extract_cleaned_business_names(input_csv_file, field_to_search='Komuna', value_to_search='8') 
+search_terms = extract_cleaned_business_names(input_csv_file, field_to_search='Komuna', value_to_search = unknown_code) 
 
 # Ekzekuto funksionin me termat e kërkimit të ekstraktuar
 fill_form_and_capture_response(search_terms)

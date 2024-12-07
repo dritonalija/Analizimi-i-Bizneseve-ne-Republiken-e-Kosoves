@@ -23,7 +23,6 @@ def datatype_format(df):
     df["Data e regjistrimit"] = pd.to_datetime(
         df["Data e regjistrimit"], errors="coerce"
     )
-    df["Kapitali"] = pd.to_numeric(df["Kapitali"], errors="coerce")
     df["Numri i punëtorëve"] = pd.to_numeric(df["Numri i punëtorëve"], errors="coerce")
     return df
 
@@ -118,6 +117,49 @@ def fill_business_type(df):
     )
     return df
 
+def split_aktivitetet(df):
+    """Krijon kolonat 'Aktiviteti Primar' dhe 'Aktiviteti Sekondar' nga kolona 'Aktivitetet' dhe heq presjet në fund."""
+    # Sigurojmë që 'Aktivitetet' është një listë
+    df["Aktivitetet"] = df["Aktivitetet"].fillna("").str.split(r"\n")
+
+    # Nxjerrim aktivitetin primar dhe sekondar, duke hequr presjet nga fundi
+    df["Aktiviteti Primar"] = df["Aktivitetet"].apply(
+        lambda x: x[0].strip().rstrip(",") if len(x) > 0 and x[0].strip() else None
+    )
+    df["Aktiviteti Sekondar"] = df["Aktivitetet"].apply(
+        lambda x: x[1].strip().rstrip(",") if len(x) > 1 and x[1].strip() else None
+    )
+
+    return df
+
+def encode_aktivitetet_categories(df):
+    """Encodes 'Aktiviteti Primar' and 'Aktiviteti Sekondar' into categories and saves in JSONL format."""
+    # Use LabelEncoder for each column
+    le_primar = LabelEncoder()
+
+    # Combine values from both columns to ensure consistent encoding
+    all_activities = pd.concat([df["Aktiviteti Primar"], df["Aktiviteti Sekondar"]]).fillna("Unknown").unique()
+
+    # Fit the LabelEncoder with all unique activities
+    le_primar.fit(all_activities)
+
+    # Fill missing values with "Unknown" before encoding
+    df["Aktiviteti Primar"] = le_primar.transform(df["Aktiviteti Primar"].fillna("Unknown"))
+    df["Aktiviteti Sekondar"] = le_primar.transform(df["Aktiviteti Sekondar"].fillna("Unknown"))
+
+    # Save mappings in JSONL format
+    jsonl_path = "../data/processed/activity_map.jsonl"
+    os.makedirs(os.path.dirname(jsonl_path), exist_ok=True)
+
+    with open(jsonl_path, "w", encoding="utf-8") as file:
+        for index, label in enumerate(le_primar.classes_):
+            json_line = json.dumps({index: label}, ensure_ascii=False)
+            file.write(json_line + "\n")
+
+    print(f"Activities have been encoded and mappings saved in '{jsonl_path}'.")
+    return df
+
+
 
 def encode_aktivitetet(df):
     """Encode the 'Aktivitetet' field by splitting by newline and applying label encoding."""
@@ -135,7 +177,7 @@ def encode_aktivitetet(df):
     unique_activities = pd.Series(all_activities).unique()
 
     # Label encode unique activities
-    label_encoder = LabelEncoder()
+    label_encoder = LabelEncoder() 
     label_encoder.fit(unique_activities)
 
     # Save mapping as newline-separated JSON
@@ -165,6 +207,27 @@ def encode_aktivitetet(df):
     df["Aktivitetet Encoded"] = df["Aktivitetet"].apply(encode_activities)
 
     return df
+
+# Funksion për të zëvendësuar 'Komuna' në datasetin kryesor
+def fill_komuna(main_df, secondary_csv_path):
+    """Përditëson kolonën 'Komuna' kur është 'I panjohur' duke përdorur të dhënat nga një CSV tjetër."""
+    arbk_df = pd.read_csv(secondary_csv_path)
+
+    # Konvertojmë kolonat për krahasim
+    main_df["Uid"] = main_df["Uid"].astype(str)
+    arbk_df["nRegjistriID"] = arbk_df["nRegjistriID"].astype(str)
+
+    # Për të gjitha rreshtat ku `Komuna` është "I panjohur"
+    for index, row in main_df.iterrows():
+        if row["Komuna"] == "I panjohur":
+            # Kontrollojmë në datasetin tjetër nëse ekziston `nRegjistriID` i njëjtë me `Uid`
+            matching_row = arbk_df[arbk_df["nRegjistriID"] == row["Uid"]]
+            if not matching_row.empty:
+                # Marrim vlerën `Komuna` nga dataset-i tjetër
+                new_komuna = matching_row.iloc[0]["Komuna"]
+                # Përditësojmë kolonën `Komuna` në datasetin fillestar
+                main_df.at[index, "Komuna"] = new_komuna
+    return main_df
 
 
 # Funksioni për të koduar kolona dhe për të ruajtur hartimet unike në një skedar JSONL
@@ -198,7 +261,7 @@ def encode_columns(df, columns, output_dir="../data/processed"):
     return df
 
 
-def preprocess_data(file_path, output_path):
+def preprocess_data(file_path,arbk_csv_path, output_path):
     """Përpunimi i të dhënave për finalizim."""
     df = (
         load_data(file_path)
@@ -209,25 +272,27 @@ def preprocess_data(file_path, output_path):
         .pipe(update_gender_column)
         .pipe(count_genders)
         .pipe(fill_business_type)
-        .fillna({"Numri i punëtorëve": 0, "Kapitali": 0})
-        .pipe(encode_aktivitetet)
+        .fillna({"Numri i punëtorëve": 0})
+        .pipe(split_aktivitetet)
+        .pipe(encode_aktivitetet_categories)
+        #.pipe(fill_komuna, arbk_csv_path) # perdoret atehere kur marrim te dhena nga Crawleri
         .pipe(encode_columns, ["Statusi", "Tipi i biznesit", "Komuna"])[
-            [
+            [   
                 "Emri i biznesit",
                 "Statusi",
                 "Tipi i biznesit",
                 "Data e regjistrimit",
                 "Data e mbylljes",
                 "Komuna",
-                "Kapitali",
                 "Numri i punëtorëve",
                 "Pronarë Mashkull",
                 "Pronarë Femër",
-                "Aktivitetet Encoded",
+                "Aktiviteti Primar",
+                "Aktiviteti Sekondar",
             ]
         ]
     )
-
+    
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df.to_csv(output_path, index=False)
     print(f"Të dhënat e përpunuara janë ruajtur në '{output_path}'")
@@ -237,10 +302,11 @@ def preprocess_data(file_path, output_path):
 if __name__ == "__main__":
     # Përkufizon shtegun e skedarëve
     input_file_path = "../data/raw/data.csv"
+    arbk_csv_path = "../data/raw/arbk_crawler_data.csv"  # Dataseti i ARBK me detajet e biznesit nga crawler-i
     output_file_path = "../data/processed/prepared_data.csv"
 
     # Sigurohet që direktoria 'processed' ekziston
     os.makedirs("../data/processed", exist_ok=True)
 
     # Ekzekuton përpunimin e të dhënave
-    preprocess_data(input_file_path, output_file_path)
+    preprocess_data(input_file_path,arbk_csv_path, output_file_path)

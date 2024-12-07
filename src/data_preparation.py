@@ -41,15 +41,25 @@ def normalize_status(df):
     return df
 
 
-# Funksioni për të përcaktuar gjininë bazuar në emrat duke përdorur gender_guesser
-def detect_gender_gender_guesser(name):
-    """Përcakton gjininë bazuar në emrin e parë."""
-    guess = d.get_gender(HumanName(name).first)
-    return (
-        "Mashkull"
-        if guess in ["male", "mostly_male"]
-        else "Femër" if guess in ["female", "mostly_female"] else "Panjohur"
-    )
+# Funksioni për të përcaktuar gjininë bazuar në emrat duke përdorur gender_guesser me strategji rezervë
+def gender_guesser(name):
+    """Përcakton gjininë bazuar në emrin e parë duke përdorur gender_guesser dhe heuristikë për fundoret e emrave."""
+    # Marrim vetëm emrin e parë
+    first_name = name.strip().split()[0] if name.strip() else ""
+
+    # Përdorim librarinë gender_guesser fillimisht
+    guess = d.get_gender(HumanName(first_name).first)
+    if guess in ["male", "mostly_male"]:
+        return "Mashkull"
+    elif guess in ["female", "mostly_female"]:
+        return "Femër"
+    else:
+        # Strategjia rezervë bazuar në fundoret e emrave shqiptarë
+        first_name = first_name.lower()
+        if first_name.endswith(('a', 'e', 'ë', 'ja')):
+            return "Femër"
+        else:
+            return "Mashkull"
 
 
 # Funksioni për të përditësuar kolonën 'Gjinia e pronarit' duke deduktuar gjininë nga emrat
@@ -58,7 +68,7 @@ def update_gender_column(df):
     df["Gjinia e pronarit"] = df.apply(
         lambda row: (
             ", ".join(
-                detect_gender_gender_guesser(name.strip())
+                gender_guesser(name.strip())
                 for name in str(row["Pronarë"]).split(",")
             )
             if "Panjohur" in str(row["Gjinia e pronarit"])

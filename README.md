@@ -317,9 +317,7 @@ Gjiashtu kemi krijuar disa statistika  te rendesishme te cilat do ti zgjerojme n
 - **Komunat**: Komuna me numrin më të madh të bizneseve.
 - **Statusi i Bizneseve**: Shumica e bizneseve janë aktive (p.sh., 80%).
 - **Aktivitetet Primare**: Aktiviteti më i zakonshëm.
-- **Ndarja Gjinore**:
-  - Pronarë meshkuj: **70%**
-  - Pronarë femra: **30%**
+- **Ndarja Gjinore**: Perqindja e Pronarë meshkuj dhe Pronarë femra
 
 #### Analiza Avancuara
 

@@ -6,24 +6,7 @@ def load_data(file_path):
     """Ngarkon të dhënat nga një skedar CSV në një DataFrame të Pandas."""
     return pd.read_csv(file_path)
 
-# Kategorizon 'Kapitali' në intervale të caktuara
-def bin_kapitali(df):
-    """Kategorizon 'Kapitali' në intervale të caktuara."""
-    df["Kapitali_Bin"] = pd.cut(
-        df["Kapitali"],
-        bins=[0, 500, 1000, 5000, 10000, 20000, 30000, np.inf],
-        labels=[
-            "0-500",
-            "500-1000",
-            "1000-5000",
-            "5000-10000",
-            "10000-20000",
-            "20000-30000",
-            "30000+",
-        ],
-        include_lowest=True  # Përfshin vlerën 0 në intervalin e parë
-    )
-    return df
+
 
 # Kategorizon 'Numri i punëtorëve' në intervale të caktuara
 def bin_employee(df):
@@ -60,9 +43,8 @@ if __name__ == "__main__":
     df = load_data(file_path)
     
     # Aplikon funksionet e kategorizimit dhe llogaritjes së moshës
-    df = bin_kapitali(df)
     df = bin_employee(df)
     df = calculate_business_age(df)
     
     # Shfaq rezultatin
-    print(df[["Kapitali", "Kapitali_Bin", "Numri i punëtorëve", "Numri i punëtorëve Bin", "Business_Age"]].head(30))
+    print(df[["Numri i punëtorëve", "Numri i punëtorëve Bin", "Business_Age"]].head(30))

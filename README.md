@@ -1,5 +1,5 @@
 # Analizimi i Bizneseve në Republikën e Kosovës
-Studimi master 2024/2025. Lënda "Paraqitja dhe vizualizimi i të dhënave". Projekt grupor "Analizimi i Bizneseve në Republikën e Kosovës".
+Studimi master 2024/2025. Lënda "Pargatitja dhe vizualizimi i të dhënave". Projekt grupor "Analizimi i Bizneseve në Republikën e Kosovës".
 
 <table>
   <tr>

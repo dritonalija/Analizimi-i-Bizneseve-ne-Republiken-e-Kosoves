@@ -62,19 +62,21 @@ Të dhënat e marra nga faqja `Open Businesses Kosova`
     - [Skriptet Përgjegjëse](#skriptet-përgjegjëse)
     - [Ruajtja e të Dhënave](#ruajtja-e-të-dhënave)
 - [Faza e dytë e projektit - Detektimi i përjashtuesve dhe mënjanimi](#faza-e-dytë-e-projektit---detektimi-i-përjashtuesve-dhe-mënjanimi)
-    - [**Z-Score**](#z-score)
-    - [**IQR (Interquartile Range)**](#iqr-interquartile-range)
-    - [**Detektimi i Vlerave me Frekuencë të ulët**](#detektimi-i-vlerave-me-frekuencë-të-ulët)
-    - [**Vizualizimi i Përjashtueve**](#vizualizimi-i-përjashtueve)
-    - [**Detektimi i Datave të Pavlefshme**](#detektimi-i-datave-të-pavlefshme)
+  - [Kërkesa](#kërkesa)
+  - [Implementimi](#implementimi)
+    - [Z-Score](#z-score)
+    - [IQR (Interquartile Range)](#iqr-interquartile-range)
+    - [Detektimi i Vlerave me Frekuencë të ulët](#detektimi-i-vlerave-me-frekuencë-të-ulët)
+    - [Vizualizimi i Përjashtueve](#vizualizimi-i-përjashtueve)
+    - [Detektimi i Datave të Pavlefshme](#detektimi-i-datave-të-pavlefshme)
   - [Statistika Përmbledhëse dhe Multivariante](#statistika-përmbledhëse-dhe-multivariante)
-    - [**Statistika Përmbledhëse**](#statistika-përmbledhëse)
-    - [**Vizualizimi me Transformim Square Root**](#vizualizimi-me-transformim-square-root)
-    - [**Analiza Multivariante**](#analiza-multivariante)
+    - [Statistika Përmbledhëse](#statistika-përmbledhëse)
+    - [Vizualizimi me Transformim Square Root](#vizualizimi-me-transformim-square-root)
+    - [Analiza Multivariante](#analiza-multivariante)
     - [Raport i Analizës së Bizneseve](#raport-i-analizës-së-bizneseve)
-      - [**Pikat Kryesore të Raportit**](#pikat-kryesore-të-raportit)
-      - [**Analiza Avancuara**](#analiza-avancuara)
-      - [**Vizualizime**](#vizualizime)
+      - [Pikat Kryesore të Raportit](#pikat-kryesore-të-raportit)
+      - [Analiza Avancuara](#analiza-avancuara)
+      - [Vizualizime](#vizualizime)
     - [Skriptet Përgjegjëse](#skriptet-përgjegjëse-1)
 - [Faza e tretë - Vizualizimi i të dhënave](#faza-e-tretë---vizualizimi-i-të-dhënave)
 - [Informata teknike të projektit](#informata-teknike-të-projektit)
@@ -184,33 +186,39 @@ janë ruajtur në një skedar `JSONL`. Në të dhënat e procesuara janë përdo
 
 # Faza e dytë e projektit - Detektimi i përjashtuesve dhe mënjanimi
 
+## Kërkesa
+Detektimi i përjashtuesit.
+Mënjanimi i zbulimeve jo të sakta
+Eksplorimi i te dhënave: statistika përmbledhëse, multivariante.
+
 Në këtë fazë janë përdorur teknika statistikore dhe vizuele për të detektuar përjashtuesit nga dataseti jonë.
 
+## Implementimi
 Një nga hapat më të rëndësishëm në analizën e të dhënave është identifikimi dhe trajtimi i përjashtuesve, të cilët mund të deformojnë rezultatet statistikore dhe analizat multivariat. Në këtë kontekst, janë përdorur metoda të shumta për detektimin e përjashtuesve:
 
-### **Z-Score**
+### Z-Score
 - **Metodologjia:** Llogarit Z-scores për të matur largësinë e një vlere nga mesatarja në njësi të devijimit standard.
 - **Zbatimi:** Të dhënat me Z-score më të madh se një prag (zakonisht 3) identifikohen si përjashtues.
 - **Rezultati:** Ky proces ndihmon në identifikimin e përjashtuesve për kolonat numerike si `Numri i punëtorëve`, `Pronarë Femër` dhe `Pronarë Mashkull`.
 
-### **IQR (Interquartile Range)**
+### IQR (Interquartile Range)
 - **Metodologjia:** Përdor kuartilet për të llogaritur kufijtë e poshtëm dhe të sipërm, duke trajtuar të dhënat jashtë këtyre kufijve si përjashtues.
 - **Zbatimi:** E dobishme për të identifikuar përjashtues në shpërndarje jo-normale.
 - **Rezultati:** Ky proces përmirëson identifikimin e përjashtuesve në dataset.
 
 Në rastin tonë, teknika Z-Score rezultoi të ishte më e suksesshme dhe më e përshtatshme krahasuar me metodën IQR. Prandaj, e kemi përdorur si metodë primare për të identifikuar dhe eliminuar vlerat përjashtuese (outliers). Për arsye statistikore, kemi mundësuar konfigurimin e një pragu (threshold) që lejon përfshirjen e të dhënave që konsiderohen outliers, por që janë të rëndësishme për vizualizimet statistikore në këtë rast.
 
-### **Detektimi i Vlerave me Frekuencë të ulët**
+### Detektimi i Vlerave me Frekuencë të ulët
    - Identifikon vlera me frekuencë të ulët në kolona kategorike(nominale).
    - Ndihmon në zbulimin e vlerave të rralla ose të pasakta.
 
-###  **Vizualizimi i Përjashtueve**
+###  Vizualizimi i Përjashtueve
    - Vizualizon kolonat numerike me dhe pa outliers duke përdorur:
      - Boxplot
      - Violin plot
      - Histogram
 
-### **Detektimi i Datave të Pavlefshme**
+### Detektimi i Datave të Pavlefshme
    - Kontrollon për data të pavlefshme, si `Data e regjistrimit` apo `Data e mbylljes`.
    - Detekton dhe regjistron anomalitë për inspektim të mëtejshëm.
   
@@ -240,24 +248,25 @@ Pasi përjashtuesit identifikohen, është e rëndësishme që të largohen ose 
 
 Eksplorimi i të dhënave përbën bazën për analizat më të avancuara. Në këtë proces, janë kryer analiza eksploruese në dy nivele: statistikë përmbledhëse dhe analiza multivariante.
 
-### **Statistika Përmbledhëse**
+### Statistika Përmbledhëse
 - **Përmbledhja:** Janë analizuar përmasat kryesore të të dhënave, si mesatarja, devijimi standard dhe shpërndarja për kolonat numerike.
 - **Vizualizimi:** Histogramet dhe boxplot-et janë përdorur për të treguar shpërndarjen e të dhënave dhe për të identifikuar përjashtuesit.
   
 
-|             | Statusi        | Tipi i Biznesit | Komuna         | Pronarë Femër | Aktiviteti Primar | Aktiviteti Sekondar |
-|-------------|----------------|-----------------|----------------|---------------|-------------------|---------------------|
-| **count**   | 228,684.000    | 228,684.000     | 228,684.000    | 228,684.000   | 228,684.000       | 228,684.000         |
-| **mean**    | 0.715          | 2.459           | 17.861         | 0.201         | 341.253           | 455.164             |
-| **std**     | 0.704          | 3.967           | 10.050         | 0.539         | 207.407           | 202.422             |
-| **min**     | 0.000          | 0.000           | 0.000          | 0.000         | 0.000             | 0.000               |
-| **25%**     | 0.000          | 0.000           | 8.000          | 0.000         | 115.000           | 319.000             |
-| **50%**     | 1.000          | 0.000           | 23.000         | 0.000         | 420.000           | 556.000             |
-| **75%**     | 1.000          | 9.000           | 25.000         | 0.000         | 545.000           | 606.000             |
-| **max**     | 2.000          | 10.000          | 35.000         | 111.000       | 610.000           | 610.000             |
+|             **Metrika** | **Statusi** | **Tipi i biznesit** | **Komuna** | **Numri i punëtorëve** | **Pronarë Mashkull** | **Pronarë Femër** | **Aktiviteti Primar** | **Aktiviteti Sekondar** |
+|-------------------------:|------------:|---------------------:|-----------:|-----------------------:|---------------------:|------------------:|----------------------:|------------------------:|
+| **Count**               | 228684.000000 | 228684.000000        | 228684.000000 | 228684.000000          | 228684.000000       | 228684.000000    | 228684.000000        | 228684.000000          |
+| **Mean**                | 0.715061      | 2.459455             | 17.861027    | 2.438754               | 0.920681            | 0.201448         | 341.252755           | 455.164170             |
+| **Std**                 | 0.704053      | 3.966887             | 10.049791    | 43.620196              | 1.223641            | 0.539261         | 207.407423           | 202.422030             |
+| **Min**                 | 0.000000      | 0.000000             | 0.000000     | -1.000000              | 0.000000            | 0.000000         | 0.000000             | 0.000000               |
+| **25%**                 | 0.000000      | 0.000000             | 8.000000     | 1.000000               | 1.000000            | 0.000000         | 115.000000           | 319.000000             |
+| **50%**                 | 1.000000      | 0.000000             | 23.000000    | 1.000000               | 1.000000            | 0.000000         | 420.000000           | 556.000000             |
+| **75%**                 | 1.000000      | 9.000000             | 25.000000    | 2.000000               | 1.000000            | 0.000000         | 545.000000           | 606.000000             |
+| **Max**                 | 2.000000      | 10.000000            | 35.000000    | 10000.000000           | 345.000000          | 111.000000       | 610.000000           | 610.000000             |
 
 
-### **Vizualizimi me Transformim Square Root**
+
+### Vizualizimi me Transformim Square Root
 - **Qëllimi:** Trajton shpërndarjet e të dhënave asimetrike duke aplikuar transformim Square Root.
 - **Rezultati:** 
   - Histogramet tregojnë shpërndarjen e dhënave për kolonat numerike si `Numri i punëtorëve` dhe `Numri i Pronarëve`.
@@ -271,7 +280,7 @@ Eksplorimi i të dhënave përbën bazën për analizat më të avancuara. Në k
     <p><i>Figura 5. Shtrembërimi i të dhënave "Pronarë"</i></p>
   </div>
 
-### **Analiza Multivariante**
+### Analiza Multivariante
 - **Chi-Square Test:** Teston pavarësinë mes kolonave nominale si `Komuna` dhe `Tipi i biznesit`.
 - **Korrelacioni dhe Kovarianca:** Analizon marrëdhëniet midis kolonave numerike si `Numri i punëtorëve` dhe `Pronarë Femër`.
 - **Vizualizimi:** Matrica e korrelacionit(pearson) dhe countplot-et tregojnë ndërveprimet dhe shpërndarjet ndërmjet kolonave.
@@ -302,7 +311,7 @@ Gjiashtu kemi krijuar disa statistika  te rendesishme te cilat do ti zgjerojme n
 
 ### Raport i Analizës së Bizneseve
 
-#### **Pikat Kryesore të Raportit**
+#### Pikat Kryesore të Raportit
 
 - **Tipet e Bizneseve**: Numri më i madh i bizneseve sipas tipit.
 - **Komunat**: Komuna me numrin më të madh të bizneseve.
@@ -312,22 +321,22 @@ Gjiashtu kemi krijuar disa statistika  te rendesishme te cilat do ti zgjerojme n
   - Pronarë meshkuj: **70%**
   - Pronarë femra: **30%**
 
-#### **Analiza Avancuara**
+#### Analiza Avancuara
 
 - **Zhvillimi Ekonomik**: 
-  - Komuna me mesataren më të lartë të punëtorëve: Komuna A.
-  - Mesatarja e përgjithshme e punëtorëve: **X punëtorë**.
+  - Komuna me mesataren më të lartë të punëtorëve.
+  - Mesatarja e përgjithshme e punëtorëve.
 
 - **Dominimi i Pronareve Femra**:
-  - Përqindja më e lartë në sektorin Z: **Y%**.
+  - Përqindja më e lartë në sektorin X
 
 - **Diversifikimi i Aktivitetit**:
   - **X%** e bizneseve kanë aktivitete sekondare.
 
 - **Shpërndarja e Punëtorëve**:
-  - Aktiviteti me numrin më të lartë të punëtorëve: Aktiviteti Z.
+  - Aktiviteti me numrin më të lartë të punëtorëve
 
-#### **Vizualizime**
+#### Vizualizime
 - Histogram për tipet e bizneseve.
 - Grafik Pie për ndarjen gjinore të pronarëve.
 - Grafik Bubble për përqendrimin e punëtorëve sipas komunës.

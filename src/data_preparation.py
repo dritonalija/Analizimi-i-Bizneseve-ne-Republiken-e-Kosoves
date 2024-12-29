@@ -284,10 +284,11 @@ def preprocess_data(file_path,arbk_csv_path, output_path):
         .pipe(fill_business_type)
         .fillna({"Numri i punëtorëve": 0})
         .pipe(split_aktivitetet)
-        .pipe(encode_aktivitetet_categories)
+        #.pipe(encode_aktivitetet_categories)
         #.pipe(fill_komuna, arbk_csv_path) # perdoret atehere kur marrim te dhena nga Crawleri
-        .pipe(encode_columns, ["Statusi", "Tipi i biznesit", "Komuna"])[
-            [   
+       # .pipe(encode_columns, ["Statusi", "Tipi i biznesit", "Komuna"])
+       [
+            [   'Uid',
                 "Emri i biznesit",
                 "Statusi",
                 "Tipi i biznesit",
@@ -298,7 +299,6 @@ def preprocess_data(file_path,arbk_csv_path, output_path):
                 "Pronarë Mashkull",
                 "Pronarë Femër",
                 "Aktiviteti Primar",
-                "Aktiviteti Sekondar",
             ]
         ]
     )
@@ -313,7 +313,7 @@ if __name__ == "__main__":
     # Përkufizon shtegun e skedarëve
     input_file_path = "../data/raw/data.csv"
     arbk_csv_path = "../data/raw/arbk_crawler_data.csv"  # Dataseti i ARBK me detajet e biznesit nga crawler-i
-    output_file_path = "../data/processed/prepared_data.csv"
+    output_file_path = "../data/processed/prepared_data_tableau.csv"
 
     # Sigurohet që direktoria 'processed' ekziston
     os.makedirs("../data/processed", exist_ok=True)
